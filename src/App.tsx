@@ -9,6 +9,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Collections from "./pages/Collections";
 import About from "./pages/About";
 import Cart from "./pages/Cart";
+import ShopifyTest from "./pages/ShopifyTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/collections/:handle" element={<Collections />} />
           <Route path="/about" element={<About />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/shopify-test" element={<ShopifyTest />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
