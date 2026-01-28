@@ -2,7 +2,6 @@ import {useLoaderData, useRouteError, isRouteErrorResponse} from 'react-router';
 import type {LoaderFunctionArgs} from 'react-router';
 import Layout from '~/components/Layout';
 import ProductGrid from '~/components/ProductGrid';
-import {fetchProducts} from '~/lib/shopify-fetcher.server';
 import type {SimpleProduct} from '~/lib/shopify.types';
 
 interface LoaderData {
@@ -11,6 +10,9 @@ interface LoaderData {
 }
 
 export async function loader({request}: LoaderFunctionArgs): Promise<LoaderData> {
+  // Dynamic import to avoid bundling server code in client
+  const {fetchProducts} = await import('~/lib/shopify-fetcher.server');
+
   try {
     // Get pagination cursor from URL if present
     const url = new URL(request.url);
