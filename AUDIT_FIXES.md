@@ -209,17 +209,93 @@ This document summarizes all the critical fixes and improvements made based on t
 
 ---
 
+## 🛒 Cart Functionality Implementation
+
+### **Shopify Storefront Cart API Integration** (Completed)
+
+#### Architecture: Server-Side API Routes
+To maintain security and prevent exposing Shopify API tokens to the client, the cart functionality uses a **server-side API architecture**:
+
+**Files Created:**
+1. **`app/lib/shopify-cart.server.ts`** - Server-only cart operations
+   - All cart functions use `.server.ts` extension
+   - Import from `shopify.server.ts` for Shopify credentials
+   - Functions: `createCart()`, `addToCart()`, `updateCartLines()`, `removeFromCart()`, `getCart()`
+   - Includes timeout handling and error validation
+
+2. **Cart API Routes** (React Router resource routes):
+   - `app/routes/api.cart.create.tsx` - POST endpoint to create cart
+   - `app/routes/api.cart.add.tsx` - POST endpoint to add items
+   - `app/routes/api.cart.update.tsx` - POST endpoint to update quantities
+   - `app/routes/api.cart.remove.tsx` - POST endpoint to remove items
+   - `app/routes/api.cart.get.tsx` - GET endpoint to fetch cart
+   - All routes include input validation and error handling
+
+3. **`app/lib/cart-context.tsx`** - Client-side cart state management
+   - Uses React Context API for global cart state
+   - Fetches cart data via API routes (not direct imports)
+   - Implements cart persistence with localStorage
+   - Provides hooks: `useCart()` with operations `addItem()`, `updateItem()`, `removeItem()`
+   - Loading and error states throughout
+
+**Files Updated:**
+- **`app/components/Cart.tsx`**
+  - Replaced mock implementation with `useCart()` hook
+  - Connected UI to real cart operations
+  - Shows cart lines with images, quantities, and prices
+  - Quantity controls (+/- buttons)
+  - Remove button for each item
+  - Checkout button redirects to Shopify checkout
+
+- **`app/components/AddToCartButton.tsx`**
+  - Uses `addItem()` from cart context
+  - Real API integration
+  - Error handling with user feedback
+  - Loading and success states
+
+- **`app/components/ProductViewer.tsx` & `LazyProductViewer.tsx`**
+  - Updated to use proper `Product` type from `shopify.types.ts`
+  - Passes correct variant IDs to AddToCartButton
+
+- **`app/root.tsx`**
+  - Wrapped app with `<CartProvider>` for global cart access
+
+- **`app/lib/shopify-queries.ts`**
+  - Added `CART_FRAGMENT` for reusable cart fields
+  - Added 5 cart GraphQL operations (create, add, update, remove, get)
+
+- **`app/lib/shopify.types.ts`**
+  - Added comprehensive cart types: `Cart`, `CartLine`, `CartLineInput`, etc.
+  - Added mutation response types
+
+- **`app/lib/shopify-fetcher.ts`**
+  - Removed cart functions (moved to `shopify-cart.server.ts`)
+  - Removed cart-related imports to prevent client/server boundary violations
+
+#### Why This Architecture?
+- **Security:** Shopify API tokens never exposed to browser
+- **Type Safety:** Full TypeScript support throughout
+- **Separation:** Clear client/server boundary
+- **Scalability:** Easy to add middleware, caching, or rate limiting
+
+#### Client/Server Flow
+```
+Client (Browser)
+  └─> cart-context.tsx
+       └─> fetch('/api/cart/add')
+            └─> Server: api.cart.add.tsx
+                 └─> shopify-cart.server.ts
+                      └─> Shopify Storefront API
+```
+
+---
+
 ## 🎯 Remaining Items (Not Implemented)
 
-The following items from the audit were identified but not implemented in this session:
+The following items from the audit were identified but not implemented:
 
 ### High Priority (Recommend Next)
-1. **Cart Functionality**
-   - Implement Shopify Storefront Cart API
-   - Replace mock cart with real implementation
-   - Add cart mutations (create, add, update, remove)
-
-2. **Full GLTF/GLB Loading**
+1. **Full GLTF/GLB Loading**
    - Complete 3D model loading with `useGLTF` from drei
    - Add loading states for 3D models
    - Add error handling for failed model loads

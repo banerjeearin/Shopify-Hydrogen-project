@@ -1,6 +1,5 @@
 import {createContext, useContext, useState, useEffect, ReactNode} from 'react';
-import type {Cart, CartLineInput} from './shopify.types';
-import {createCart, addToCart, updateCartLines, removeFromCart, getCart} from './shopify-fetcher';
+import type {Cart, CartLineInput, CartInput} from './shopify.types';
 
 interface CartContextType {
   cart: Cart | null;
@@ -15,6 +14,89 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_ID_KEY = 'shopify_cart_id';
+
+/**
+ * API helper functions for cart operations
+ */
+async function apiCreateCart(input: CartInput = {}): Promise<Cart> {
+  const response = await fetch('/api/cart/create', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({input}),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to create cart');
+  }
+
+  return data.cart;
+}
+
+async function apiAddToCart(cartId: string, lines: CartLineInput[]): Promise<Cart> {
+  const response = await fetch('/api/cart/add', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({cartId, lines}),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to add to cart');
+  }
+
+  return data.cart;
+}
+
+async function apiUpdateCartLines(cartId: string, lines: {id: string; quantity: number}[]): Promise<Cart> {
+  const response = await fetch('/api/cart/update', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({cartId, lines}),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to update cart');
+  }
+
+  return data.cart;
+}
+
+async function apiRemoveFromCart(cartId: string, lineIds: string[]): Promise<Cart> {
+  const response = await fetch('/api/cart/remove', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({cartId, lineIds}),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to remove from cart');
+  }
+
+  return data.cart;
+}
+
+async function apiGetCart(cartId: string): Promise<Cart | null> {
+  const response = await fetch(`/api/cart/get?cartId=${encodeURIComponent(cartId)}`);
+
+  const data = await response.json();
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to fetch cart');
+  }
+
+  return data.cart;
+}
 
 /**
  * Cart Provider Component
@@ -42,7 +124,7 @@ export function CartProvider({children}: {children: ReactNode}) {
 
       if (savedCartId) {
         // Try to fetch existing cart
-        const existingCart = await getCart(savedCartId);
+        const existingCart = await apiGetCart(savedCartId);
 
         if (existingCart) {
           setCart(existingCart);
@@ -67,7 +149,7 @@ export function CartProvider({children}: {children: ReactNode}) {
    */
   async function createNewCart() {
     try {
-      const newCart = await createCart();
+      const newCart = await apiCreateCart();
       setCart(newCart);
       localStorage.setItem(CART_ID_KEY, newCart.id);
     } catch (err) {
@@ -97,7 +179,7 @@ export function CartProvider({children}: {children: ReactNode}) {
       }
 
       const lines: CartLineInput[] = [{merchandiseId, quantity}];
-      const updatedCart = await addToCart(currentCartId, lines);
+      const updatedCart = await apiAddToCart(currentCartId, lines);
       setCart(updatedCart);
     } catch (err) {
       console.error('Error adding item:', err);
@@ -122,7 +204,7 @@ export function CartProvider({children}: {children: ReactNode}) {
       setError(null);
 
       const lines = [{id: lineId, quantity}];
-      const updatedCart = await updateCartLines(cart.id, lines);
+      const updatedCart = await apiUpdateCartLines(cart.id, lines);
       setCart(updatedCart);
     } catch (err) {
       console.error('Error updating item:', err);
@@ -146,7 +228,7 @@ export function CartProvider({children}: {children: ReactNode}) {
       setIsLoading(true);
       setError(null);
 
-      const updatedCart = await removeFromCart(cart.id, [lineId]);
+      const updatedCart = await apiRemoveFromCart(cart.id, [lineId]);
       setCart(updatedCart);
     } catch (err) {
       console.error('Error removing item:', err);
