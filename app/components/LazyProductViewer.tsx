@@ -1,12 +1,11 @@
 import {Suspense, lazy} from 'react';
+import type {Product} from '~/lib/shopify.types';
 
 const ProductViewer = lazy(() => import('./ProductViewer'));
 
 interface LazyProductViewerProps {
-  product: {
-    handle: string;
-    title: string;
-    description: string;
+  product: Product & {
+    model3dUrl?: string;
   };
 }
 
