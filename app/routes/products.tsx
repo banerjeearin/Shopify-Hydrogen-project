@@ -10,7 +10,7 @@ interface LoaderData {
 }
 
 export async function loader({request}: LoaderFunctionArgs): Promise<LoaderData> {
-  const {fetchProducts} = await import('~/lib/shopify-fetcher');
+  const {fetchProducts} = await import('~/lib/shopify-fetcher.server');
 
   try {
     // Get pagination cursor from URL if present

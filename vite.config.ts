@@ -29,7 +29,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: [
       // Exclude modules that import .server files from pre-bundling
-      '~/lib/shopify-fetcher',
+      '~/lib/shopify-fetcher.server',
     ],
   },
   ssr: {
