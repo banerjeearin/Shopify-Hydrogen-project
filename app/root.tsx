@@ -6,6 +6,7 @@ import {
   ScrollRestoration,
 } from 'react-router';
 import {useNonce} from '@shopify/hydrogen';
+import {CartProvider} from '~/lib/cart-context';
 import stylesheet from '~/styles/app.css';
 
 export function links() {
@@ -60,5 +61,9 @@ export function Layout({children}: {children?: React.ReactNode}) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <CartProvider>
+      <Outlet />
+    </CartProvider>
+  );
 }

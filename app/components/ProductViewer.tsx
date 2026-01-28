@@ -3,12 +3,10 @@ import {Canvas} from '@react-three/fiber';
 import {OrbitControls, Environment, PerspectiveCamera, useGLTF} from '@react-three/drei';
 import AddToCartButton from './AddToCartButton';
 import type * as THREE from 'three';
+import type {Product} from '~/lib/shopify.types';
 
 interface ProductViewerProps {
-  product: {
-    handle: string;
-    title: string;
-    description: string;
+  product: Product & {
     model3dUrl?: string;
   };
 }
@@ -80,10 +78,14 @@ export default function ProductViewer({product}: ProductViewerProps) {
       <div className="flex flex-col justify-center">
         <h1 className="text-4xl font-serif font-bold mb-4">{product.title}</h1>
         <p className="text-neutral-600 mb-8">{product.description}</p>
-        <AddToCartButton
-          productId={product.handle}
-          variantId={product.handle}
-        />
+        {product.variants.edges.length > 0 ? (
+          <AddToCartButton
+            productId={product.id}
+            variantId={product.variants.edges[0].node.id}
+          />
+        ) : (
+          <p className="text-red-600">Product not available</p>
+        )}
       </div>
     </div>
   );

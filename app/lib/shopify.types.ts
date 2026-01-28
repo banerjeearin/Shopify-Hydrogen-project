@@ -107,34 +107,77 @@ export interface CollectionConnection {
   pageInfo?: PageInfo;
 }
 
-// Cart types for future implementation
+// Cart types - Shopify Storefront API Cart
+export interface CartLineMerchandise {
+  id: string;
+  title: string;
+  priceV2: MoneyV2;
+  product: {
+    id: string;
+    title: string;
+    handle: string;
+    featuredImage?: {
+      url: string;
+      altText: string | null;
+    };
+  };
+}
+
 export interface CartLine {
   id: string;
   quantity: number;
-  merchandise: {
-    id: string;
-    title: string;
-    product: {
-      id: string;
-      title: string;
-      handle: string;
-    };
-  };
   cost: {
     totalAmount: MoneyV2;
   };
+  merchandise: CartLineMerchandise;
+}
+
+export interface CartLineEdge {
+  node: CartLine;
+}
+
+export interface CartLineConnection {
+  edges: CartLineEdge[];
+}
+
+export interface CartCost {
+  totalAmount: MoneyV2;
+  subtotalAmount: MoneyV2;
+  totalTaxAmount?: MoneyV2;
 }
 
 export interface Cart {
   id: string;
-  lines: CartLine[];
-  cost: {
-    totalAmount: MoneyV2;
-    subtotalAmount: MoneyV2;
-    totalTaxAmount?: MoneyV2;
-  };
-  totalQuantity: number;
   checkoutUrl: string;
+  totalQuantity: number;
+  cost: CartCost;
+  lines: CartLineConnection;
+}
+
+// Input types for cart mutations
+export interface CartLineInput {
+  merchandiseId: string;
+  quantity: number;
+}
+
+export interface CartInput {
+  lines?: CartLineInput[];
+}
+
+export interface CartLineUpdateInput {
+  id: string;
+  quantity: number;
+}
+
+// Mutation response types
+export interface UserError {
+  field?: string[];
+  message: string;
+}
+
+export interface CartMutationResponse {
+  cart: Cart | null;
+  userErrors: UserError[];
 }
 
 // GraphQL Response wrapper
