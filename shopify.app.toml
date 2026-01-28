@@ -1,0 +1,25 @@
+# Learn more about configuring your Hydrogen app at
+# https://shopify.dev/docs/custom-storefronts/hydrogen
+
+name = "liimra-store"
+client_id = "YOUR_CLIENT_ID"
+application_url = "https://your-store.myshopify.com"
+embedded = false
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products,write_customers,write_draft_orders"
+
+[auth]
+redirect_urls = [
+  "https://your-store.myshopify.com/auth/callback",
+  "https://your-store.myshopify.com/auth/shopify/callback",
+  "https://your-store.myshopify.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-10"
+
+[pos]
+embedded = false
+
