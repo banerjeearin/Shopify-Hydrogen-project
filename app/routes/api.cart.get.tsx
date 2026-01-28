@@ -1,0 +1,26 @@
+import type {LoaderFunctionArgs} from 'react-router';
+import {json} from 'react-router';
+import {getCart} from '~/lib/shopify-cart.server';
+
+export async function loader({request}: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const cartId = url.searchParams.get('cartId');
+
+  if (!cartId) {
+    return json({error: 'Cart ID is required'}, {status: 400});
+  }
+
+  try {
+    const cart = await getCart(cartId);
+
+    if (!cart) {
+      return json({error: 'Cart not found'}, {status: 404});
+    }
+
+    return json({cart}, {status: 200});
+  } catch (error) {
+    console.error('Cart get error:', error);
+    const message = error instanceof Error ? error.message : 'Failed to fetch cart';
+    return json({error: message}, {status: 500});
+  }
+}
