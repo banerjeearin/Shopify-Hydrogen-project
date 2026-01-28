@@ -11,7 +11,7 @@ interface LoaderData {
 
 export async function loader({params}: LoaderFunctionArgs): Promise<LoaderData> {
   // Dynamic import to avoid bundling server code in client
-  const {fetchProduct} = await import('~/lib/shopify-fetcher.server');
+  const {fetchProduct} = await import('~/lib/shopify-fetcher');
 
   const {handle} = params;
 

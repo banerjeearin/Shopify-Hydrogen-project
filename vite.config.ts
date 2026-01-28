@@ -15,6 +15,22 @@ export default defineConfig({
     // Allow a strict Content-Security-Policy
     // without inlining assets as base64:
     assetsInlineLimit: 0,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Ensure .server files are never in client chunks
+          if (id.includes('.server.')) {
+            return 'server-only';
+          }
+        },
+      },
+    },
+  },
+  optimizeDeps: {
+    exclude: [
+      // Exclude modules that import .server files from pre-bundling
+      '~/lib/shopify-fetcher',
+    ],
   },
   ssr: {
     optimizeDeps: {
@@ -31,6 +47,10 @@ export default defineConfig({
       include: ['set-cookie-parser', 'cookie', 'react-router', 'react-dom/server'],
     },
     noExternal: ['react-dom/server'],
+    // Mark .server files as SSR-only to prevent client bundling
+    resolve: {
+      externalConditions: ['workerd', 'worker'],
+    },
   },
   server: {
     allowedHosts: ['.tryhydrogen.dev'],

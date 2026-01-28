@@ -10,8 +10,7 @@ interface LoaderData {
 }
 
 export async function loader({request}: LoaderFunctionArgs): Promise<LoaderData> {
-  // Dynamic import to avoid bundling server code in client
-  const {fetchProducts} = await import('~/lib/shopify-fetcher.server');
+  const {fetchProducts} = await import('~/lib/shopify-fetcher');
 
   try {
     // Get pagination cursor from URL if present
