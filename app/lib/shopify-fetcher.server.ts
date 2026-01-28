@@ -1,3 +1,9 @@
+/**
+ * Server-only Shopify API Fetcher
+ * This file contains server-only code and must have the .server.ts extension
+ * to prevent it from being bundled into the client.
+ */
+
 import {getStorefrontApiUrl, getPublicTokenHeaders, isShopifyConfigured} from './shopify.server';
 import {
   PRODUCT_QUERY,
