@@ -2,7 +2,7 @@ import {useLoaderData, useRouteError, isRouteErrorResponse} from 'react-router';
 import type {LoaderFunctionArgs} from 'react-router';
 import Layout from '~/components/Layout';
 import ProductViewer from '~/components/ProductViewer';
-import {fetchProduct} from '~/lib/shopify-fetcher';
+import {fetchProduct} from '~/lib/shopify-fetcher.server';
 import type {Product} from '~/lib/shopify.types';
 
 interface LoaderData {
