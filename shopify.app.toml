@@ -1,16 +1,26 @@
-# Learn more about configuring your Hydrogen app at
-# https://shopify.dev/docs/custom-storefronts/hydrogen
+# Shopify App Configuration for Liimra Store
+# Learn more: https://shopify.dev/docs/custom-storefronts/hydrogen
 
 name = "liimra-store"
-client_id = "YOUR_CLIENT_ID"
-application_url = "https://your-store.myshopify.com"
+
+# IMPORTANT: Replace these placeholder values with your actual Shopify app credentials
+# Get these from: Shopify Admin > Apps > Develop apps > [Your App] > API credentials
+client_id = "YOUR_CLIENT_ID"  # Replace with your actual Client ID
+application_url = "https://your-store.myshopify.com"  # Replace with your store URL
+
+# Hydrogen storefronts are not embedded in Shopify admin
 embedded = false
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products,write_customers,write_draft_orders"
+# Minimal scopes for Hydrogen storefront
+# Note: Storefront API uses public access tokens and doesn't require these scopes
+# These are only needed if you plan to use Admin API for backend operations
+# For a basic storefront, you can use: "read_products" or remove this section entirely
+scopes = "read_products"
 
 [auth]
+# OAuth redirect URLs for app installation
+# Replace with your actual domain after deployment
 redirect_urls = [
   "https://your-store.myshopify.com/auth/callback",
   "https://your-store.myshopify.com/auth/shopify/callback",
@@ -18,8 +28,18 @@ redirect_urls = [
 ]
 
 [webhooks]
+# Use latest stable Storefront API version
+# Check for updates: https://shopify.dev/docs/api/release-notes
 api_version = "2024-10"
 
 [pos]
+# Hydrogen storefronts don't embed in POS
 embedded = false
+
+# Development Notes:
+# ==================
+# 1. For local development, your Storefront API credentials go in .env file
+# 2. This file is primarily for Shopify CLI and admin app integration
+# 3. For production, ensure all placeholder values are replaced
+# 4. Use minimal scopes following principle of least privilege
 

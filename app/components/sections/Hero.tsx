@@ -1,13 +1,14 @@
-import {Suspense} from 'react';
-import {Canvas} from '@react-three/fiber';
+import {Suspense, useRef, useEffect} from 'react';
+import {Canvas, useFrame} from '@react-three/fiber';
 import {Environment, PerspectiveCamera} from '@react-three/drei';
 import {motion} from 'framer-motion';
-import {useFrame} from '@react-three/fiber';
-import {useRef} from 'react';
+import type * as THREE from 'three';
 
 function FloatingProduct() {
-  const meshRef = useRef<any>(null);
-  
+  const meshRef = useRef<THREE.Mesh>(null);
+  const geometryRef = useRef<THREE.BoxGeometry>(null);
+  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+
   useFrame((state) => {
     if (meshRef.current) {
       meshRef.current.rotation.y = state.clock.elapsedTime * 0.5;
@@ -15,10 +16,27 @@ function FloatingProduct() {
     }
   });
 
+  // Cleanup Three.js resources to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (geometryRef.current) {
+        geometryRef.current.dispose();
+      }
+      if (materialRef.current) {
+        materialRef.current.dispose();
+      }
+    };
+  }, []);
+
   return (
     <mesh ref={meshRef}>
-      <boxGeometry args={[2, 3, 1]} />
-      <meshStandardMaterial color="#3a9660" metalness={0.8} roughness={0.2} />
+      <boxGeometry ref={geometryRef} args={[2, 3, 1]} />
+      <meshStandardMaterial
+        ref={materialRef}
+        color="#3a9660"
+        metalness={0.8}
+        roughness={0.2}
+      />
     </mesh>
   );
 }

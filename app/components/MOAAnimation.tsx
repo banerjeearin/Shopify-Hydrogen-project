@@ -1,6 +1,7 @@
-import {Suspense, useRef} from 'react';
+import {Suspense, useRef, useEffect} from 'react';
 import {Canvas, useFrame} from '@react-three/fiber';
 import {Environment, PerspectiveCamera} from '@react-three/drei';
+import type * as THREE from 'three';
 
 interface MOAAnimationProps {
   title?: string;
@@ -8,8 +9,10 @@ interface MOAAnimationProps {
 }
 
 function Particle({angle, radius, delay}: {angle: number; radius: number; delay: number}) {
-  const meshRef = useRef<any>(null);
-  
+  const meshRef = useRef<THREE.Mesh>(null);
+  const geometryRef = useRef<THREE.SphereGeometry>(null);
+  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+
   useFrame((state) => {
     if (meshRef.current) {
       const time = state.clock.elapsedTime + delay;
@@ -18,34 +21,65 @@ function Particle({angle, radius, delay}: {angle: number; radius: number; delay:
     }
   });
 
+  // Cleanup Three.js resources to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (geometryRef.current) {
+        geometryRef.current.dispose();
+      }
+      if (materialRef.current) {
+        materialRef.current.dispose();
+      }
+    };
+  }, []);
+
   return (
     <mesh
       ref={meshRef}
       position={[Math.cos(angle) * radius, Math.sin(angle) * radius, 0]}
     >
-      <sphereGeometry args={[0.2, 16, 16]} />
-      <meshStandardMaterial color="#5ab47e" />
+      <sphereGeometry ref={geometryRef} args={[0.2, 16, 16]} />
+      <meshStandardMaterial ref={materialRef} color="#5ab47e" />
     </mesh>
   );
 }
 
 function CellularInteraction() {
-  const groupRef = useRef<any>(null);
-  
+  const groupRef = useRef<THREE.Group>(null);
+  const cellGeometryRef = useRef<THREE.SphereGeometry>(null);
+  const cellMaterialRef = useRef<THREE.MeshStandardMaterial>(null);
+
   useFrame(() => {
     if (groupRef.current) {
       groupRef.current.rotation.y += 0.005;
     }
   });
 
+  // Cleanup Three.js resources
+  useEffect(() => {
+    return () => {
+      if (cellGeometryRef.current) {
+        cellGeometryRef.current.dispose();
+      }
+      if (cellMaterialRef.current) {
+        cellMaterialRef.current.dispose();
+      }
+    };
+  }, []);
+
   return (
     <group ref={groupRef}>
       {/* Cell representation */}
       <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshStandardMaterial color="#3a9660" transparent opacity={0.7} />
+        <sphereGeometry ref={cellGeometryRef} args={[1, 32, 32]} />
+        <meshStandardMaterial
+          ref={cellMaterialRef}
+          color="#3a9660"
+          transparent
+          opacity={0.7}
+        />
       </mesh>
-      
+
       {/* Ingredient particles */}
       {Array.from({length: 8}).map((_, i) => {
         const angle = (i / 8) * Math.PI * 2;
