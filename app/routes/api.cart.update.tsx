@@ -10,7 +10,7 @@ export async function action({request}: ActionFunctionArgs) {
   try {
     // Dynamic import to avoid bundling server code in client
     const {updateCartLines} = await import('~/lib/shopify-cart.server');
-    
+
     const body: {cartId: string; lines: CartLineUpdateInput[]} = await request.json();
 
     if (!body.cartId) {

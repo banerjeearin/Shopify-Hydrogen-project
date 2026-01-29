@@ -12,7 +12,7 @@ export async function loader({request}: LoaderFunctionArgs) {
   try {
     // Dynamic import to avoid bundling server code in client
     const {getCart} = await import('~/lib/shopify-cart.server');
-    
+
     const cart = await getCart(cartId);
 
     if (!cart) {
