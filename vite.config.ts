@@ -3,7 +3,7 @@ import {hydrogen} from '@shopify/hydrogen/vite';
 import {reactRouter} from '@react-router/dev/vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
-export default defineConfig({
+export default defineConfig(({command, mode, isSsrBuild}) => ({
   plugins: [
     hydrogen({
       disableVirtualRoutes: false, // Keep virtual routes but our routes should take precedence
@@ -15,16 +15,13 @@ export default defineConfig({
     // Allow a strict Content-Security-Policy
     // without inlining assets as base64:
     assetsInlineLimit: 0,
-    rollupOptions: {
+    rollupOptions: isSsrBuild ? {
       output: {
-        manualChunks(id) {
-          // Ensure .server files are never in client chunks
-          if (id.includes('.server.')) {
-            return 'server-only';
-          }
-        },
+        // For SSR builds, inline all dynamic imports to avoid missing assets
+        // This prevents the "Cannot find module 'assets/xxx.js'" error
+        inlineDynamicImports: true,
       },
-    },
+    } : {},
   },
   optimizeDeps: {
     exclude: [
@@ -55,4 +52,4 @@ export default defineConfig({
   server: {
     allowedHosts: ['.tryhydrogen.dev'],
   },
-});
+}));
