@@ -1,6 +1,5 @@
 import type {ActionFunctionArgs} from 'react-router';
 import {json} from 'react-router';
-import {createCart} from '~/lib/shopify-cart.server';
 import type {CartInput} from '~/lib/shopify.types';
 
 export async function action({request}: ActionFunctionArgs) {
@@ -9,6 +8,9 @@ export async function action({request}: ActionFunctionArgs) {
   }
 
   try {
+    // Dynamic import to avoid bundling server code in client
+    const {createCart} = await import('~/lib/shopify-cart.server');
+
     const body: {input?: CartInput} = await request.json();
     const cart = await createCart(body.input || {});
 
