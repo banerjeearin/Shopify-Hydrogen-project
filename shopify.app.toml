@@ -3,10 +3,9 @@
 
 name = "liimra-store"
 
-# IMPORTANT: Replace these placeholder values with your actual Shopify app credentials
-# Get these from: Shopify Admin > Apps > Develop apps > [Your App] > API credentials
-client_id = "YOUR_CLIENT_ID"  # Replace with your actual Client ID
-application_url = "https://your-store.myshopify.com"  # Replace with your store URL
+# Shopify app credentials for Liimra Store
+client_id = "f9a5293c-906e-47c7-8482-46bdb79a8b46"
+application_url = "https://j1fw5d-qj.myshopify.com"
 
 # Hydrogen storefronts are not embedded in Shopify admin
 embedded = false
@@ -20,11 +19,11 @@ scopes = "read_products"
 
 [auth]
 # OAuth redirect URLs for app installation
-# Replace with your actual domain after deployment
 redirect_urls = [
-  "https://your-store.myshopify.com/auth/callback",
-  "https://your-store.myshopify.com/auth/shopify/callback",
-  "https://your-store.myshopify.com/api/auth/callback"
+  "https://j1fw5d-qj.myshopify.com/auth/callback",
+  "https://j1fw5d-qj.myshopify.com/auth/shopify/callback",
+  "https://j1fw5d-qj.myshopify.com/api/auth/callback",
+  "https://liimra-storefront-a7fa1cca734c9f3d5d5a.o2.myshopify.dev/auth/callback"
 ]
 
 [webhooks]
