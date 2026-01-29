@@ -1,9 +1,10 @@
 import {createStorefrontClient} from '@shopify/hydrogen-react';
 
 // Validate required environment variables
+// Note: PRIVATE_STOREFRONT_API_TOKEN is used for server-side requests (configured in Shopify Oxygen)
 const requiredEnvVars = {
   storeDomain: process.env.PUBLIC_STORE_DOMAIN,
-  publicStorefrontToken: process.env.PUBLIC_STOREFRONT_API_TOKEN,
+  publicStorefrontToken: process.env.PRIVATE_STOREFRONT_API_TOKEN || process.env.PUBLIC_STOREFRONT_API_TOKEN,
   storefrontApiVersion: process.env.PUBLIC_STOREFRONT_API_VERSION,
 };
 
