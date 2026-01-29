@@ -1,6 +1,5 @@
 import type {LoaderFunctionArgs} from 'react-router';
 import {json} from 'react-router';
-import {getCart} from '~/lib/shopify-cart.server';
 
 export async function loader({request}: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -11,6 +10,9 @@ export async function loader({request}: LoaderFunctionArgs) {
   }
 
   try {
+    // Dynamic import to avoid bundling server code in client
+    const {getCart} = await import('~/lib/shopify-cart.server');
+    
     const cart = await getCart(cartId);
 
     if (!cart) {
