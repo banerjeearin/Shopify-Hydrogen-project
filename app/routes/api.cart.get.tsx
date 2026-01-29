@@ -1,12 +1,11 @@
 import type {LoaderFunctionArgs} from 'react-router';
-import {json} from 'react-router';
 
 export async function loader({request}: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const cartId = url.searchParams.get('cartId');
 
   if (!cartId) {
-    return json({error: 'Cart ID is required'}, {status: 400});
+    return Response.json({error: 'Cart ID is required'}, {status: 400});
   }
 
   try {
@@ -16,13 +15,13 @@ export async function loader({request}: LoaderFunctionArgs) {
     const cart = await getCart(cartId);
 
     if (!cart) {
-      return json({error: 'Cart not found'}, {status: 404});
+      return Response.json({error: 'Cart not found'}, {status: 404});
     }
 
-    return json({cart}, {status: 200});
+    return Response.json({cart}, {status: 200});
   } catch (error) {
     console.error('Cart get error:', error);
     const message = error instanceof Error ? error.message : 'Failed to fetch cart';
-    return json({error: message}, {status: 500});
+    return Response.json({error: message}, {status: 500});
   }
 }
