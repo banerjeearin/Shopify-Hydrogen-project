@@ -7,7 +7,7 @@ import {
 } from 'react-router';
 import {useNonce} from '@shopify/hydrogen';
 import {CartProvider} from '~/lib/cart-context';
-import stylesheet from '~/styles/app.css';
+import stylesheet from '~/styles/app.css?url';
 
 export function links() {
   return [

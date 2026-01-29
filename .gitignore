@@ -10,6 +10,7 @@ coverage/
 dist/
 build/
 .oxygen/
+.react-router/
 
 # Misc
 .DS_Store
