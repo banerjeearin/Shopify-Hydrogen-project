@@ -3,6 +3,7 @@ import type {LoaderFunctionArgs} from 'react-router';
 import Layout from '~/components/Layout';
 import ProductViewer from '~/components/ProductViewer';
 import type {Product} from '~/lib/shopify.types';
+import {fetchProduct} from '~/lib/shopify-fetcher.server';
 
 interface LoaderData {
   product: Product;
@@ -10,8 +11,6 @@ interface LoaderData {
 }
 
 export async function loader({params}: LoaderFunctionArgs): Promise<LoaderData> {
-  // Dynamic import to avoid bundling server code in client
-  const {fetchProduct} = await import('~/lib/shopify-fetcher.server');
 
   const {handle} = params;
 
