@@ -16,21 +16,34 @@ export default defineConfig(({isSsrBuild}) => ({
     rollupOptions: isSsrBuild
       ? {
           output: {
-            // Bundle all server code into single file to avoid missing assets
             inlineDynamicImports: true,
           },
         }
       : {},
   },
-  optimizeDeps: {
-    // Exclude server modules from client pre-bundling
-    exclude: ['~/lib/shopify-fetcher.server', '~/lib/shopify-cart.server', '~/lib/shopify.server'],
-  },
   ssr: {
     optimizeDeps: {
-      include: ['set-cookie-parser', 'cookie', 'react-router', 'react-dom/server'],
+      include: [
+        'set-cookie-parser',
+        'cookie',
+        'react-router',
+        'react-dom/server',
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+      ],
     },
-    noExternal: ['react-dom/server'],
+    // Bundle React and related packages into the worker
+    noExternal: [
+      'react',
+      'react-dom',
+      'react-dom/server',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      '@shopify/hydrogen',
+      '@shopify/hydrogen-react',
+    ],
     resolve: {
       externalConditions: ['workerd', 'worker'],
     },
