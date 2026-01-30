@@ -247,3 +247,171 @@ export const GET_CART_QUERY = `
   }
 `;
 
+/**
+ * Get a single collection by handle with products
+ */
+export const COLLECTION_QUERY = `
+  query Collection($handle: String!, $first: Int!) {
+    collection(handle: $handle) {
+      id
+      title
+      handle
+      description
+      image {
+        id
+        url
+        altText
+      }
+      products(first: $first) {
+        edges {
+          node {
+            id
+            title
+            handle
+            priceRange {
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+            images(first: 1) {
+              edges {
+                node {
+                  id
+                  url
+                  altText
+                }
+              }
+            }
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * Get a page by handle
+ */
+export const PAGE_QUERY = `
+  query Page($handle: String!) {
+    page(handle: $handle) {
+      id
+      title
+      handle
+      body
+      bodySummary
+      seo {
+        title
+        description
+      }
+    }
+  }
+`;
+
+/**
+ * Get shop policies
+ */
+export const POLICIES_QUERY = `
+  query Policies {
+    shop {
+      privacyPolicy {
+        id
+        title
+        handle
+        body
+      }
+      refundPolicy {
+        id
+        title
+        handle
+        body
+      }
+      shippingPolicy {
+        id
+        title
+        handle
+        body
+      }
+      termsOfService {
+        id
+        title
+        handle
+        body
+      }
+    }
+  }
+`;
+
+/**
+ * Search products
+ */
+export const SEARCH_QUERY = `
+  query Search($query: String!, $first: Int!) {
+    products(first: $first, query: $query) {
+      edges {
+        node {
+          id
+          title
+          handle
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          images(first: 1) {
+            edges {
+              node {
+                id
+                url
+                altText
+              }
+            }
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+/**
+ * Get all products and collections for sitemap
+ */
+export const SITEMAP_QUERY = `
+  query Sitemap {
+    products(first: 250) {
+      edges {
+        node {
+          handle
+          updatedAt
+        }
+      }
+    }
+    collections(first: 250) {
+      edges {
+        node {
+          handle
+          updatedAt
+        }
+      }
+    }
+    pages(first: 250) {
+      edges {
+        node {
+          handle
+          updatedAt
+        }
+      }
+    }
+  }
+`;
+
