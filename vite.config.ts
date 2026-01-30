@@ -3,6 +3,19 @@ import {hydrogen} from '@shopify/hydrogen/vite';
 import {reactRouter} from '@react-router/dev/vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
+// Process polyfill to inject at the start of the bundle
+const processPolyfill = `
+if (typeof globalThis.process === 'undefined') {
+  globalThis.process = {
+    env: {},
+    version: '',
+    versions: {},
+    platform: 'browser',
+    nextTick: (fn) => setTimeout(fn, 0),
+  };
+}
+`;
+
 export default defineConfig(({isSsrBuild}) => ({
   plugins: [
     hydrogen({
@@ -17,15 +30,11 @@ export default defineConfig(({isSsrBuild}) => ({
       ? {
           output: {
             inlineDynamicImports: true,
+            // Inject process polyfill at the start of the bundle
+            intro: processPolyfill,
           },
         }
       : {},
-  },
-  define: {
-    // Only define NODE_ENV, let Oxygen provide the rest of process.env
-    'process.env.NODE_ENV': JSON.stringify('production'),
-    // Polyfill global process object for libraries that check process directly
-    'globalThis.process': JSON.stringify({env: {NODE_ENV: 'production'}}),
   },
   ssr: {
     optimizeDeps: {

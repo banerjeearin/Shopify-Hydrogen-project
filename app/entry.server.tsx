@@ -1,3 +1,6 @@
+// Process polyfill must be first import for edge runtime compatibility
+import '~/lib/process-polyfill';
+
 import {ServerRouter} from 'react-router';
 import {isbot} from 'isbot';
 import {renderToReadableStream} from 'react-dom/server.browser';
