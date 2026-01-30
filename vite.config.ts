@@ -22,9 +22,10 @@ export default defineConfig(({isSsrBuild}) => ({
       : {},
   },
   define: {
-    // Polyfill process for edge runtime
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-    'process.env': '{}',
+    // Only define NODE_ENV, let Oxygen provide the rest of process.env
+    'process.env.NODE_ENV': JSON.stringify('production'),
+    // Polyfill global process object for libraries that check process directly
+    'globalThis.process': JSON.stringify({env: {NODE_ENV: 'production'}}),
   },
   ssr: {
     optimizeDeps: {
