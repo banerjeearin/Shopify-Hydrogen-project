@@ -30,20 +30,10 @@ export default defineConfig(({isSsrBuild}) => ({
         'react-dom/server',
         'react',
         'react-dom',
-        'react/jsx-runtime',
-        'react/jsx-dev-runtime',
       ],
     },
-    // Bundle React and related packages into the worker
-    noExternal: [
-      'react',
-      'react-dom',
-      'react-dom/server',
-      'react/jsx-runtime',
-      'react/jsx-dev-runtime',
-      '@shopify/hydrogen',
-      '@shopify/hydrogen-react',
-    ],
+    // Bundle ALL dependencies into the worker - required for Oxygen/Cloudflare Workers
+    noExternal: true,
     resolve: {
       externalConditions: ['workerd', 'worker'],
     },
