@@ -1,3 +1,6 @@
+// Process polyfill must be first import for edge runtime compatibility
+import '~/lib/process-polyfill';
+
 import {ServerRouter} from 'react-router';
 import {isbot} from 'isbot';
 import {renderToReadableStream} from 'react-dom/server.browser';
@@ -6,6 +9,7 @@ import {
   type HydrogenRouterContextProvider,
 } from '@shopify/hydrogen';
 import type {EntryContext} from 'react-router';
+import {initializeShopify} from '~/lib/shopify.server';
 
 export default async function handleRequest(
   request: Request,
@@ -14,6 +18,12 @@ export default async function handleRequest(
   reactRouterContext: EntryContext,
   context: HydrogenRouterContextProvider,
 ) {
+  // Initialize Shopify client with environment variables from Oxygen context
+  // This must happen before any Shopify API calls
+  if (context.env) {
+    initializeShopify(context.env);
+  }
+
   const {nonce, header, NonceProvider} = createContentSecurityPolicy({
     shop: {
       checkoutDomain: context.env?.PUBLIC_CHECKOUT_DOMAIN,
