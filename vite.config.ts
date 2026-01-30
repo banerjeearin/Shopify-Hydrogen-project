@@ -21,6 +21,11 @@ export default defineConfig(({isSsrBuild}) => ({
         }
       : {},
   },
+  define: {
+    // Polyfill process for edge runtime
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+    'process.env': '{}',
+  },
   ssr: {
     optimizeDeps: {
       include: [
@@ -37,13 +42,11 @@ export default defineConfig(({isSsrBuild}) => ({
     resolve: {
       externalConditions: ['workerd', 'worker'],
     },
-    // Mark Node.js built-ins as external (they'll be polyfilled by Oxygen)
     external: ['module', 'fs', 'path', 'crypto', 'stream', 'util', 'os', 'events'],
   },
   resolve: {
     conditions: ['workerd', 'worker', 'browser'],
     alias: {
-      // Provide empty polyfills for Node.js built-ins
       module: 'data:text/javascript,export default {};export const createRequire = () => () => ({});',
     },
   },
