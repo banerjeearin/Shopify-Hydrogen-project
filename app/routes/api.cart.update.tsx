@@ -1,5 +1,6 @@
 import type {ActionFunctionArgs} from 'react-router';
 import type {CartLineUpdateInput} from '~/lib/shopify.types';
+import {updateCartLines} from '~/lib/shopify-cart.server';
 
 export async function action({request}: ActionFunctionArgs) {
   if (request.method !== 'POST') {
@@ -7,8 +8,6 @@ export async function action({request}: ActionFunctionArgs) {
   }
 
   try {
-    // Dynamic import to avoid bundling server code in client
-    const {updateCartLines} = await import('~/lib/shopify-cart.server');
 
     const body: {cartId: string; lines: CartLineUpdateInput[]} = await request.json();
 
