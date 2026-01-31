@@ -41,6 +41,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build project
+        run: npm run build
+
+      - name: Check process shim in SSR bundle
+        run: |
+          node -e "const fs=require('fs'); const s=fs.readFileSync('dist/server/index.js','utf8'); console.log('✓ Process shim present:', s.includes('globalThis.process')); console.log('✓ process.env usage found:', s.includes('process.env')); console.log('✓ Bundle size:', Math.round(fs.statSync('dist/server/index.js').size/1024) + 'KB');"
+
       - name: Build and Publish to Oxygen
         run: npx shopify hydrogen deploy -s j1fw5d-qj
         env:
