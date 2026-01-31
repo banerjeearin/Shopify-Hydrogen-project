@@ -1,68 +1,27 @@
-import {Suspense, useRef, useEffect, useState} from 'react';
-import {Canvas, useFrame} from '@react-three/fiber';
-import {Environment, PerspectiveCamera} from '@react-three/drei';
+import {useEffect, useState} from 'react';
+import type {ComponentType} from 'react';
 import {motion} from 'framer-motion';
-import type * as THREE from 'three';
 
-function FloatingProduct() {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const geometryRef = useRef<THREE.BoxGeometry>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.5;
-      meshRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.3;
-    }
-  });
-
-  // Cleanup Three.js resources to prevent memory leaks
-  useEffect(() => {
-    return () => {
-      if (geometryRef.current) {
-        geometryRef.current.dispose();
-      }
-      if (materialRef.current) {
-        materialRef.current.dispose();
-      }
-    };
-  }, []);
-
-  return (
-    <mesh ref={meshRef}>
-      <boxGeometry ref={geometryRef} args={[2, 3, 1]} />
-      <meshStandardMaterial
-        ref={materialRef}
-        color="#3a9660"
-        metalness={0.8}
-        roughness={0.2}
-      />
-    </mesh>
-  );
-}
-
+/**
+ * SSR-safe wrapper for Hero component
+ * Dynamically imports the client-only Three.js component after mount
+ * This prevents Three.js from being imported during SSR
+ */
 export default function Hero() {
-  // Client-only guard: prevent Three.js from executing during SSR
-  const [isClient, setIsClient] = useState(false);
+  const [ClientComponent, setClientComponent] = useState<ComponentType | null>(null);
 
   useEffect(() => {
-    setIsClient(true);
+    // Dynamically import the client-only component
+    import('./Hero.client').then((module) => {
+      setClientComponent(() => module.default);
+    });
   }, []);
 
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-neutral-50 to-white">
       <div className="absolute inset-0 z-0">
-        {isClient ? (
-          <Canvas>
-            <Suspense fallback={null}>
-              <PerspectiveCamera makeDefault position={[0, 0, 8]} />
-              <ambientLight intensity={0.3} />
-              <directionalLight position={[5, 5, 5]} intensity={1} />
-              <pointLight position={[-5, -5, 5]} intensity={0.5} />
-              <FloatingProduct />
-              <Environment preset="sunset" />
-            </Suspense>
-          </Canvas>
+        {ClientComponent ? (
+          <ClientComponent />
         ) : (
           <div className="w-full h-full bg-gradient-to-b from-neutral-50 to-white" />
         )}
@@ -97,4 +56,3 @@ export default function Hero() {
     </section>
   );
 }
-

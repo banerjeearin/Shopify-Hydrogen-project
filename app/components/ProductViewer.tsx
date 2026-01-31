@@ -1,8 +1,6 @@
-import {Suspense, useRef, useEffect, useState} from 'react';
-import {Canvas} from '@react-three/fiber';
-import {OrbitControls, Environment, PerspectiveCamera, useGLTF} from '@react-three/drei';
+import {useEffect, useState} from 'react';
+import type {ComponentType} from 'react';
 import AddToCartButton from './AddToCartButton';
-import type * as THREE from 'three';
 import type {Product} from '~/lib/shopify.types';
 
 interface ProductViewerProps {
@@ -12,76 +10,25 @@ interface ProductViewerProps {
 }
 
 /**
- * 3D Product Model Component
- * Loads GLTF/GLB models if modelUrl is provided, otherwise shows placeholder
+ * SSR-safe wrapper for ProductViewer
+ * Dynamically imports the client-only Three.js component after mount
+ * This prevents Three.js from being imported during SSR
  */
-function ProductModel({modelUrl}: {modelUrl?: string}) {
-  const geometryRef = useRef<THREE.BoxGeometry>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
-
-  // Cleanup Three.js resources
-  useEffect(() => {
-    return () => {
-      if (geometryRef.current) {
-        geometryRef.current.dispose();
-      }
-      if (materialRef.current) {
-        materialRef.current.dispose();
-      }
-    };
-  }, []);
-
-  // If 3D model URL is provided, attempt to load GLTF
-  // For now using placeholder - full GLTF implementation would use useGLTF
-  if (modelUrl) {
-    try {
-      // TODO: Implement GLTF loading
-      // const gltf = useGLTF(modelUrl);
-      // return <primitive object={gltf.scene} />;
-      console.log('3D model URL provided:', modelUrl);
-    } catch (error) {
-      console.error('Failed to load 3D model:', error);
-    }
-  }
-
-  // Fallback to placeholder box
-  return (
-    <mesh>
-      <boxGeometry ref={geometryRef} args={[2, 3, 1]} />
-      <meshStandardMaterial ref={materialRef} color="#3a9660" />
-    </mesh>
-  );
-}
-
 export default function ProductViewer({product}: ProductViewerProps) {
-  // Client-only guard: prevent Three.js from executing during SSR
-  const [isClient, setIsClient] = useState(false);
+  const [ClientComponent, setClientComponent] = useState<ComponentType<ProductViewerProps> | null>(null);
 
   useEffect(() => {
-    setIsClient(true);
+    // Dynamically import the client-only component
+    import('./ProductViewer.client').then((module) => {
+      setClientComponent(() => module.default);
+    });
   }, []);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
       <div className="aspect-square bg-neutral-100 rounded-lg overflow-hidden" role="img" aria-label={`3D view of ${product.title}`}>
-        {isClient ? (
-          <Canvas>
-            <Suspense fallback={null}>
-              <PerspectiveCamera makeDefault position={[0, 0, 5]} />
-              <ambientLight intensity={0.5} />
-              <directionalLight position={[10, 10, 5]} intensity={1} />
-              <ProductModel modelUrl={product.model3dUrl} />
-              <OrbitControls
-                enablePan={false}
-                enableZoom={true}
-                minDistance={3}
-                maxDistance={10}
-                enableDamping
-                dampingFactor={0.05}
-              />
-              <Environment preset="studio" />
-            </Suspense>
-          </Canvas>
+        {ClientComponent ? (
+          <ClientComponent product={product} />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-neutral-400">
             Loading 3D viewer...
