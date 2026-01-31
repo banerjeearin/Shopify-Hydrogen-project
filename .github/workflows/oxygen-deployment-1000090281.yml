@@ -22,8 +22,10 @@ jobs:
       - name: Setup node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
-          check-latest: true
+          # Pin Node.js version for deterministic builds
+          # Using LTS version that matches local development
+          node-version: "20"
+          check-latest: false
 
       - name: Cache node modules
         id: cache-npm
