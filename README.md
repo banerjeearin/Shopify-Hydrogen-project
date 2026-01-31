@@ -26,7 +26,7 @@ A modern, interactive e-commerce website built with Shopify Hydrogen, featuring 
 
 ### Prerequisites
 
-- Node.js 18.0.0 or higher
+- Node.js 18.0.0 or higher. prefereble 24
 - npm (comes with Node.js) or yarn
 - A Shopify store with Storefront API access
 
