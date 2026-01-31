@@ -48,13 +48,14 @@ export default defineConfig(({isSsrBuild}) => ({
       ],
     },
     // Bundle ALL dependencies into the worker - required for Oxygen/Cloudflare Workers
-    // BUT externalize 3D libraries (client-side only, reduces bundle by ~700KB)
+    // Note: Three.js is bundled (not externalized) to prevent "No such module" errors
+    // The bundle will be larger (~2MB) but will work correctly
     noExternal: true,
     resolve: {
       externalConditions: ['workerd', 'worker'],
     },
     external: [
-      // Node.js built-ins
+      // Node.js built-ins only
       'module',
       'fs',
       'path',
@@ -63,10 +64,6 @@ export default defineConfig(({isSsrBuild}) => ({
       'util',
       'os',
       'events',
-      // 3D libraries (client-side only - reduces SSR bundle by ~700KB)
-      'three',
-      '@react-three/fiber',
-      '@react-three/drei',
     ],
   },
   resolve: {
