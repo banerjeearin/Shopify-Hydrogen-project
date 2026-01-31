@@ -3,19 +3,6 @@ import {hydrogen} from '@shopify/hydrogen/vite';
 import {reactRouter} from '@react-router/dev/vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
-// Process polyfill to inject at the start of the bundle
-const processPolyfill = `
-if (typeof globalThis.process === 'undefined') {
-  globalThis.process = {
-    env: {},
-    version: '',
-    versions: {},
-    platform: 'browser',
-    nextTick: (fn) => setTimeout(fn, 0),
-  };
-}
-`;
-
 export default defineConfig(({isSsrBuild}) => ({
   plugins: [
     hydrogen({
@@ -26,16 +13,9 @@ export default defineConfig(({isSsrBuild}) => ({
   ],
   build: {
     assetsInlineLimit: 0,
-    rollupOptions: isSsrBuild
-      ? {
-          output: {
-            // Don't inline dynamic imports - allows client-only chunks to remain separate
-            // inlineDynamicImports: true,  // Removed to prevent client-only code from being bundled into SSR
-            // Inject process polyfill at the start of the bundle
-            intro: processPolyfill,
-          },
-        }
-      : {},
+    // Don't customize SSR rollupOptions - let Hydrogen's React Router preset handle it
+    // Oxygen/worker packaging expects a specific structure from the preset
+    // rollupOptions removed to avoid interfering with Hydrogen's bundle shape
   },
   ssr: {
     optimizeDeps: {
