@@ -13,9 +13,15 @@ export default defineConfig(({isSsrBuild}) => ({
   ],
   build: {
     assetsInlineLimit: 0,
-    // Don't customize SSR rollupOptions - let Hydrogen's React Router preset handle it
-    // Oxygen/worker packaging expects a specific structure from the preset
-    // rollupOptions removed to avoid interfering with Hydrogen's bundle shape
+    rollupOptions: isSsrBuild
+      ? {
+          output: {
+            // Force SSR to be a single file to prevent missing chunk errors
+            // React Router cleanup removes assets/ directory, so we must inline everything
+            inlineDynamicImports: true,
+          },
+        }
+      : {},
   },
   ssr: {
     optimizeDeps: {
