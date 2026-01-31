@@ -1,7 +1,7 @@
 import {useLoaderData, useRouteError, isRouteErrorResponse} from 'react-router';
 import type {LoaderFunctionArgs} from 'react-router';
 import Layout from '~/components/Layout';
-import ProductViewer from '~/components/ProductViewer';
+import LazyProductViewer from '~/components/LazyProductViewer';
 import type {Product} from '~/lib/shopify.types';
 import {fetchProduct} from '~/lib/shopify-fetcher.server';
 
@@ -101,7 +101,7 @@ export default function ProductPage() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-12">
-        <ProductViewer product={{...product, model3dUrl}} />
+        <LazyProductViewer product={{...product, model3dUrl}} />
       </div>
     </Layout>
   );

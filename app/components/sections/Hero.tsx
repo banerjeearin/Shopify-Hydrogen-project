@@ -1,4 +1,4 @@
-import {Suspense, useRef, useEffect} from 'react';
+import {Suspense, useRef, useEffect, useState} from 'react';
 import {Canvas, useFrame} from '@react-three/fiber';
 import {Environment, PerspectiveCamera} from '@react-three/drei';
 import {motion} from 'framer-motion';
@@ -42,19 +42,30 @@ function FloatingProduct() {
 }
 
 export default function Hero() {
+  // Client-only guard: prevent Three.js from executing during SSR
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-neutral-50 to-white">
       <div className="absolute inset-0 z-0">
-        <Canvas>
-          <Suspense fallback={null}>
-            <PerspectiveCamera makeDefault position={[0, 0, 8]} />
-            <ambientLight intensity={0.3} />
-            <directionalLight position={[5, 5, 5]} intensity={1} />
-            <pointLight position={[-5, -5, 5]} intensity={0.5} />
-            <FloatingProduct />
-            <Environment preset="sunset" />
-          </Suspense>
-        </Canvas>
+        {isClient ? (
+          <Canvas>
+            <Suspense fallback={null}>
+              <PerspectiveCamera makeDefault position={[0, 0, 8]} />
+              <ambientLight intensity={0.3} />
+              <directionalLight position={[5, 5, 5]} intensity={1} />
+              <pointLight position={[-5, -5, 5]} intensity={0.5} />
+              <FloatingProduct />
+              <Environment preset="sunset" />
+            </Suspense>
+          </Canvas>
+        ) : (
+          <div className="w-full h-full bg-gradient-to-b from-neutral-50 to-white" />
+        )}
       </div>
       <div className="relative z-10 text-center px-4">
         <motion.h1

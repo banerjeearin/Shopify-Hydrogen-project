@@ -22,6 +22,8 @@ export default async function handleRequest(
   // This must happen before any Shopify API calls
   if (context.env) {
     initializeShopify(context.env);
+  } else {
+    console.warn('[Entry Server] No environment context provided - Shopify client may not be initialized');
   }
 
   const {nonce, header, NonceProvider} = createContentSecurityPolicy({

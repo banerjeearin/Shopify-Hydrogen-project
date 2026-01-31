@@ -1,4 +1,4 @@
-import {Suspense, useRef, useEffect} from 'react';
+import {Suspense, useRef, useEffect, useState} from 'react';
 import {Canvas} from '@react-three/fiber';
 import {OrbitControls, Environment, PerspectiveCamera, useGLTF} from '@react-three/drei';
 import AddToCartButton from './AddToCartButton';
@@ -54,26 +54,39 @@ function ProductModel({modelUrl}: {modelUrl?: string}) {
 }
 
 export default function ProductViewer({product}: ProductViewerProps) {
+  // Client-only guard: prevent Three.js from executing during SSR
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
       <div className="aspect-square bg-neutral-100 rounded-lg overflow-hidden" role="img" aria-label={`3D view of ${product.title}`}>
-        <Canvas>
-          <Suspense fallback={null}>
-            <PerspectiveCamera makeDefault position={[0, 0, 5]} />
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[10, 10, 5]} intensity={1} />
-            <ProductModel modelUrl={product.model3dUrl} />
-            <OrbitControls
-              enablePan={false}
-              enableZoom={true}
-              minDistance={3}
-              maxDistance={10}
-              enableDamping
-              dampingFactor={0.05}
-            />
-            <Environment preset="studio" />
-          </Suspense>
-        </Canvas>
+        {isClient ? (
+          <Canvas>
+            <Suspense fallback={null}>
+              <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+              <ambientLight intensity={0.5} />
+              <directionalLight position={[10, 10, 5]} intensity={1} />
+              <ProductModel modelUrl={product.model3dUrl} />
+              <OrbitControls
+                enablePan={false}
+                enableZoom={true}
+                minDistance={3}
+                maxDistance={10}
+                enableDamping
+                dampingFactor={0.05}
+              />
+              <Environment preset="studio" />
+            </Suspense>
+          </Canvas>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-neutral-400">
+            Loading 3D viewer...
+          </div>
+        )}
       </div>
       <div className="flex flex-col justify-center">
         <h1 className="text-4xl font-serif font-bold mb-4">{product.title}</h1>

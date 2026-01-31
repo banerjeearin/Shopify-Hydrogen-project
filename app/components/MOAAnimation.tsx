@@ -1,4 +1,4 @@
-import {Suspense, useRef, useEffect} from 'react';
+import {Suspense, useRef, useEffect, useState} from 'react';
 import {Canvas, useFrame} from '@react-three/fiber';
 import {Environment, PerspectiveCamera} from '@react-three/drei';
 import type * as THREE from 'three';
@@ -96,6 +96,13 @@ export default function MOAAnimation({
   title = 'Mechanism of Action',
   description = 'How our ingredients interact at a cellular level',
 }: MOAAnimationProps) {
+  // Client-only guard: prevent Three.js from executing during SSR
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <section className="py-24 bg-white">
       <div className="container mx-auto px-4">
@@ -104,15 +111,21 @@ export default function MOAAnimation({
           <p className="text-xl text-neutral-600">{description}</p>
         </div>
         <div className="max-w-4xl mx-auto aspect-video bg-neutral-100 rounded-lg overflow-hidden">
-          <Canvas>
-            <Suspense fallback={null}>
-              <PerspectiveCamera makeDefault position={[0, 0, 5]} />
-              <ambientLight intensity={0.5} />
-              <directionalLight position={[5, 5, 5]} intensity={1} />
-              <CellularInteraction />
-              <Environment preset="studio" />
-            </Suspense>
-          </Canvas>
+          {isClient ? (
+            <Canvas>
+              <Suspense fallback={null}>
+                <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+                <ambientLight intensity={0.5} />
+                <directionalLight position={[5, 5, 5]} intensity={1} />
+                <CellularInteraction />
+                <Environment preset="studio" />
+              </Suspense>
+            </Canvas>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-neutral-400">
+              Loading 3D animation...
+            </div>
+          )}
         </div>
       </div>
     </section>
