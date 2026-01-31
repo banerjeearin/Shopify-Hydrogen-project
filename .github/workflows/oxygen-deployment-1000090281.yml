@@ -1,6 +1,12 @@
 name: Storefront 1000090281
 on: [push]
 
+# Prevent concurrent runs from cancelling each other
+# Only one deployment per branch can run at a time
+concurrency:
+  group: oxygen-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   deployments: write
@@ -36,6 +42,6 @@ jobs:
         run: npm ci
 
       - name: Build and Publish to Oxygen
-        run: npx shopify hydrogen deploy
+        run: npx shopify hydrogen deploy -s j1fw5d-qj
         env:
           SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000090281 }}
