@@ -29,7 +29,8 @@ export default defineConfig(({isSsrBuild}) => ({
     rollupOptions: isSsrBuild
       ? {
           output: {
-            inlineDynamicImports: true,
+            // Don't inline dynamic imports - allows client-only chunks to remain separate
+            // inlineDynamicImports: true,  // Removed to prevent client-only code from being bundled into SSR
             // Inject process polyfill at the start of the bundle
             intro: processPolyfill,
           },
