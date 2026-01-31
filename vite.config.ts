@@ -3,6 +3,11 @@ import {hydrogen} from '@shopify/hydrogen/vite';
 import {reactRouter} from '@react-router/dev/vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
+// Minimal process polyfill for Oxygen/Cloudflare Worker runtime
+const processPolyfill = `
+  globalThis.process = globalThis.process || { env: {} };
+`;
+
 export default defineConfig(({isSsrBuild}) => ({
   plugins: [
     hydrogen({
@@ -19,6 +24,8 @@ export default defineConfig(({isSsrBuild}) => ({
             // Force SSR to be a single file to prevent missing chunk errors
             // React Router cleanup removes assets/ directory, so we must inline everything
             inlineDynamicImports: true,
+            // Inject minimal process polyfill for Oxygen/Cloudflare Worker runtime
+            intro: processPolyfill,
           },
         }
       : {},
