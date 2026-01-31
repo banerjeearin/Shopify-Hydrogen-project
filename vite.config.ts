@@ -42,8 +42,8 @@ export default defineConfig(({isSsrBuild}) => ({
       ],
     },
     // Bundle ALL dependencies into the worker - required for Oxygen/Cloudflare Workers
-    // Note: Three.js is bundled (not externalized) to prevent "No such module" errors
-    // The bundle will be larger (~2MB) but will work correctly
+    // Note: Three.js is NOT in SSR bundle (client-only via dynamic imports in .client.tsx files)
+    // This keeps the SSR bundle small (~972KB) and within Oxygen's 10MB limit
     noExternal: true,
     resolve: {
       externalConditions: ['workerd', 'worker'],
