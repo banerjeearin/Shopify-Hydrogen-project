@@ -7,7 +7,7 @@ This workflow will:
 1. Pull **all paid Shopify orders**
 2. Treat **every valid Shopify SKU as one ERPNext Finished Goods (FG) Item**
 3. **Create FG Item in ERPNext if missing**
-4. Use **BOM recipe table only** for BOM creation (**no AI-invented BOM quantities**)
+4. Use **BOM recipe table first**, then fall back to **LLM dynamic BOM proposal (Human-in-the-loop)** if missing
 5. Create **one consolidated Work Order per SKU per day**
 6. Push all missing **SKU / BOM / Raw Material** issues to an **exception queue**
 
@@ -48,11 +48,11 @@ This workflow will:
   - Once manufacturing is accounted for, follow up with the creation of the Sales Invoice.
 
 ## 1.5 BOM Rule
-- BOM must be created **only from the BOM recipe table**
-- The system must **never infer or invent BOM quantities**
-- If BOM recipe is missing:
-  - do **not** create BOM
-  - push the issue to **exception queue**
+- BOM must be created **from the BOM recipe table** if available
+- If BOM recipe is missing from the local database:
+  - use an **LLM (Claude 3 Haiku)** to dynamically propose a BOM recipe (materials and quantities)
+  - pause the pipeline and mandate **human-in-the-loop review** before proceeding
+  - push the issue to **exception queue** if raw materials are missing in ERPNext
 
 ## 1.6 Work Order Rule
 - Create **one consolidated Work Order per SKU per day**
@@ -131,7 +131,8 @@ For each distinct valid Shopify SKU:
    - mark as resolved
 3. If no:
    - create ERPNext Item as Finished Goods item
-   - update mapping table
+   - fetch the auto-generated ERPNext Item Code (e.g., `STO-ITEM-...`)
+   - update mapping table with this auto-generated code for all downstream APIs
 
 ### ERPNext Item rules
 - `is_stock_item = 1`
@@ -181,11 +182,13 @@ For each unfulfilled FG item demand:
    - validate all child raw materials exist
    - create BOM in ERPNext
 4. If BOM recipe is missing:
-   - create exception
-   - do not create BOM
+   - invoke LLM (Anthropic Claude 3 Haiku) to propose a BOM recipe dynamically
+   - pause pipeline for human review
+   - if approved, create BOM in ERPNext
+   - if rejected, create exception
 
 ### Strict rule
-The system must **never** guess BOM lines or quantities.
+The system must **never** fully automate AI-guessed BOMs; any AI proposal requires strict human approval before proceeding.
 
 ### Output
 - Valid default BOM exists for each manufacturable FG item requiring production.
@@ -298,9 +301,9 @@ For each `stg_work_order_plan` row:
 - Pass shortage to manufacturing planning.
 
 ## 4.5 BOM Creation
-- Use only `bom_recipe_master`
-- No AI-generated BOMs
-- Missing recipe → exception
+- Use `bom_recipe_master` if available
+- Fall back to LLM dynamic BOM proposal if missing (requires manual approval)
+- Missing raw materials → exception
 
 ## 4.6 Work Order Planning
 - Consolidate unfulfilled demand by SKU + day
@@ -340,7 +343,7 @@ This automation must behave as a **controlled manufacturing orchestration pipeli
 - Auto-create FG Item if missing
 - **Fulfill orders from existing stock first via Sales Invoices**
 - **Manufacture only the net shortage**
-- BOM must come **only from BOM recipe table**
+- BOM must come **from BOM recipe table** or be **explicitly approved by a human if proposed by AI**
 - One consolidated Work Order per SKU per day
 - Missing SKU / BOM / RM issues must always go to exception queue
 

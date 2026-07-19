@@ -45,9 +45,9 @@ class AgentState(TypedDict):
 1. **Ingestion Node**: Fetches orders (paid and unpaid) using `date_from` and `date_to`. Upserts into staging tables. If an order exists but changed from 'pending' to 'paid', it updates the header status.
 2. **Classification Node**: Reads PENDING lines. Validates `sku`. Updates status to CLASSIFIED. Flags missing SKUs to the exception queue.
 3. **Item Master Node**: Checks ERPNext for classified SKUs. Creates missing Finished Goods items via Frappe API (`is_stock_item=1`, `item_group="Finished Goods"`).
-4. **BOM Generation Node**: Deterministically reads from `bom_recipe_master`. Validates raw materials against ERPNext. Creates default BOMs. Never invents quantities.
-5. **Planning Node**: The MRP engine. Calculates: `Net Qty = Open Paid Demand - Available Stock - Open WO Qty`. Upserts positive net quantities into `stg_work_order_plan`.
-6. **Work Order Node**: Reads PENDING plans and POSTs them to the ERPNext `/api/resource/Work Order` endpoint.
+4. **BOM Generation Node**: Deterministically reads from `bom_recipe_master`. If missing, invokes Anthropic's Claude 3 Haiku via LangChain to dynamically propose a BOM recipe (materials and quantities) which requires human review. Creates default BOMs using the auto-generated ERP item codes.
+5. **Planning Node**: The MRP engine. Calculates: `Net Qty = Open Paid Demand - Available Stock - Open WO Qty`. Upserts positive net quantities into `stg_work_order_plan` using the mapped `erp_item_code`.
+6. **Work Order Node**: Reads PENDING plans and POSTs them to the ERPNext `/api/resource/Work Order` endpoint using the mapped `erp_item_code`.
 7. **Exception Node**: Consolidates all `exceptions` logged in the state and triggers external alerts (e.g., logging, Slack webhooks).
 
 ## 5. Sequence Diagram

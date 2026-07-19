@@ -17,6 +17,7 @@ async def planning_agent(state: AgentState) -> AgentState:
     planning_date = state.get("planning_date", datetime.utcnow().date())
     
     erp_client = ERPNextClient()
+    generated_plans = []
     
     async with AsyncSessionLocal() as db:
         for sku in classified_skus:
@@ -38,14 +39,23 @@ async def planning_agent(state: AgentState) -> AgentState:
                 continue
                 
             try:
-                open_wo_qty = await erp_client.get_open_work_orders_qty(sku)
+                # Get mapped ERP code
+                from app.models import MapShopifySkuErpItem
+                stmt_map = select(MapShopifySkuErpItem).where(MapShopifySkuErpItem.shopify_sku == sku)
+                res_map = await db.execute(stmt_map)
+                mapping = res_map.scalars().first()
+                if not mapping:
+                    raise Exception(f"Mapping not found for {sku}")
+                erp_code = mapping.erp_item_code
+                
+                open_wo_qty = await erp_client.get_open_work_orders_qty(erp_code)
                 
                 net_qty = open_unfulfilled_demand - open_wo_qty
                 
                 if net_qty > 0:
                     # Upsert to Work Order Plan
                     stmt_plan = select(StgWorkOrderPlan).where(
-                        StgWorkOrderPlan.erp_fg_item_code == sku,
+                        StgWorkOrderPlan.erp_fg_item_code == erp_code,
                         StgWorkOrderPlan.planning_date == planning_date,
                         StgWorkOrderPlan.status == WorkOrderStatus.PENDING
                     )
@@ -58,11 +68,16 @@ async def planning_agent(state: AgentState) -> AgentState:
                         plan_record = StgWorkOrderPlan(
                             run_id=state.get("run_id"),
                             planning_date=planning_date,
-                            erp_fg_item_code=sku,
+                            erp_fg_item_code=erp_code,
                             net_qty=net_qty,
                             status=WorkOrderStatus.PENDING
                         )
                         db.add(plan_record)
+                    
+                    generated_plans.append({
+                        "erp_fg_item_code": erp_code,
+                        "net_qty": net_qty
+                    })
             
             except Exception as e:
                 # Log general failure for planning
@@ -70,17 +85,19 @@ async def planning_agent(state: AgentState) -> AgentState:
                 
         await db.commit()
         
-        from app.models import ActivityLog, ActivityType
-        log = ActivityLog(
-            run_id=state.get("run_id"),
-            agent_name="Planning",
-            title="Production Planning",
-            description=f"Generated production plans for {planning_date}.",
-            type=ActivityType.SUCCESS
-        )
-        db.add(log)
-        await db.commit()
+        if generated_plans:
+            from app.models import ActivityLog, ActivityType
+            log = ActivityLog(
+                run_id=state.get("run_id"),
+                agent_name="Planning",
+                title="Production Planning",
+                description=f"Generated {len(generated_plans)} production plans for {planning_date}.",
+                type=ActivityType.SUCCESS
+            )
+            db.add(log)
+            await db.commit()
     
     await erp_client.close()
 
-    return {}
+    return {"work_order_plans": generated_plans}
+
